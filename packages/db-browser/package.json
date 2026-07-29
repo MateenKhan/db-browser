@@ -1,0 +1,68 @@
+{
+  "name": "@jugaaadi/db-browser",
+  "version": "0.0.1",
+  "description": "A reusable, transport-agnostic database browser for React — table browsing with paginated CRUD, a guarded SQL console and live schema introspection, built on @jugaaadi/table.",
+  "license": "MIT",
+  "author": "Mateen Khan",
+  "type": "module",
+  "main": "./dist/db-browser.js",
+  "module": "./dist/db-browser.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/db-browser.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "import": "./dist/core.js"
+    },
+    "./style.css": "./dist/style.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "**/*.css"
+  ],
+  "keywords": [
+    "database",
+    "browser",
+    "postgres",
+    "sql",
+    "react",
+    "data-grid",
+    "spreadsheet",
+    "sql-editor"
+  ],
+  "scripts": {
+    "build": "vite build --config vite.lib.config.ts",
+    "typecheck": "tsc --noEmit",
+    "prepack": "npm run build"
+  },
+  "peerDependencies": {
+    "@jugaaadi/table": ">=0.0.1",
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "dependencies": {
+    "@codemirror/autocomplete": "^6.18.6",
+    "@codemirror/commands": "^6.8.1",
+    "@codemirror/lang-sql": "^6.8.0",
+    "@codemirror/language": "^6.11.0",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.8",
+    "sql-formatter": "^15.4.11"
+  },
+  "devDependencies": {
+    "@jugaaadi/table": "file:../../vendor/jugaaadi-table-0.0.1.tgz",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.11",
+    "vite-plugin-dts": "^4.5.0"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "name": "db-browser-workspace",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Monorepo for @jugaaadi/db-browser — a reusable database browser library built on @jugaaadi/table.",
+  "workspaces": [
+    "packages/db-browser",
+    "packages/db-browser-pg",
+    "apps/demo"
+  ],
+  "scripts": {
+    "build": "npm run build -w @jugaaadi/db-browser && npm run build -w @jugaaadi/db-browser-pg && npm run build -w @jugaaadi/db-browser-demo",
+    "build:lib": "npm run build -w @jugaaadi/db-browser && npm run build -w @jugaaadi/db-browser-pg",
+    "typecheck": "npm run typecheck -w @jugaaadi/db-browser && npm run typecheck -w @jugaaadi/db-browser-pg && npm run typecheck -w @jugaaadi/db-browser-demo",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "demo:server": "npm run server -w @jugaaadi/db-browser-demo",
+    "demo:web": "npm run dev -w @jugaaadi/db-browser-demo"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vite": "^6.0.11",
+    "vitest": "^3.0.5"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

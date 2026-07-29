@@ -1,0 +1,30 @@
+{
+  "name": "@jugaaadi/db-browser-demo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Demo app: browses the local platformdb through @jugaaadi/db-browser.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "server": "node --experimental-strip-types server/server.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@jugaaadi/db-browser": "^0.0.1",
+    "@jugaaadi/db-browser-pg": "^0.0.1",
+    "@jugaaadi/table": "file:../../vendor/jugaaadi-table-0.0.1.tgz",
+    "pg": "^8.13.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.11"
+  }
+}
