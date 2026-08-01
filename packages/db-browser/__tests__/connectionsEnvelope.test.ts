@@ -130,7 +130,7 @@ const CONNECTIONS_BODY = {
       id: 'd80df936-c912-4b23-935e-511379add6b2',
       name: 'Piranha embeddings (added from the UI)',
       engine: 'sqlite',
-      values: { file: 'F:/code/ai/piranha/.embeddings/code-embeddings.db', readOnly: true },
+      values: { file: '/path/to/code-embeddings.db', readOnly: true },
       secretsSet: [],
       readOnly: true,
       createdAt: '2026-07-31T09:23:01.720Z',
@@ -243,7 +243,7 @@ describe('GET /connections', () => {
       engine: 'sqlite',
       readOnly: true,
     })
-    expect(parsed.connections[0].values.file).toBe('F:/code/ai/piranha/.embeddings/code-embeddings.db')
+    expect(parsed.connections[0].values.file).toBe('/path/to/code-embeddings.db')
     expect(parsed.editing?.message).toContain('Bound to 127.0.0.1')
   })
 

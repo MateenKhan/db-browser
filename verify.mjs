@@ -16,10 +16,10 @@ const assert = (cond, t) => (cond ? ok(t) : fail(t))
 // ---------------------------------------------------------------------------
 line('1. code-review-graph — base-app/.code-review-graph/graph.db')
 // ---------------------------------------------------------------------------
-const GRAPH_DB = process.env.CODE_GRAPH_DB ?? 'F:/code/ai/base-app/.code-review-graph/graph.db'
+const GRAPH_DB = process.env.CODE_GRAPH_DB ?? './data/graph.db'
 const BIG_GRAPH_DB =
-  process.env.BIG_GRAPH_DB ?? 'F:/code/ai/remote_manufacturing/.code-review-graph/graph.db'
-const VECTOR_DB = process.env.EMBEDDINGS_DB ?? 'F:/code/ai/piranha/.embeddings/code-embeddings.db'
+  process.env.BIG_GRAPH_DB ?? './data/graph-large.db'
+const VECTOR_DB = process.env.EMBEDDINGS_DB ?? '/path/to/code-embeddings.db'
 
 const graph = await createSqliteDataSource({ filename: GRAPH_DB })
 const gTables = await graph.listTables()
