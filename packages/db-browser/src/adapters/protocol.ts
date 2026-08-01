@@ -10,6 +10,7 @@
 
 import type {
   BinaryCellData,
+  DatabaseProfile,
   Page,
   PkValues,
   QueryResult,
@@ -25,6 +26,8 @@ export const DB_BROWSER_ROUTES = {
   capabilities: '/capabilities',
   tables: '/tables',
   describe: '/describe',
+  /** What kind of database this is — relational, embedding store, code graph. */
+  profile: '/profile',
   select: '/select',
   insert: '/rows/insert',
   update: '/rows/update',
@@ -72,6 +75,7 @@ export interface ErrorBody {
 
 export type TablesResponse = { tables: TableMeta[] }
 export type DescribeResponse = { schema: TableSchema }
+export type ProfileResponse = { profile: DatabaseProfile }
 export type SelectResponse = { page: Page }
 export type RowResponse = { row: Row }
 export type QueryResponse = { result: QueryResult }

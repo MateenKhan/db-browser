@@ -1,0 +1,64 @@
+{
+  "name": "@jugaaadi/db-browser-connectors",
+  "version": "0.0.1",
+  "description": "Metadata-driven database connector registry for @jugaaadi/db-browser: descriptors as data, drivers downloaded on demand, one shared SqlDataSource. Node only.",
+  "license": "MIT",
+  "author": "Mateen Khan",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "database",
+    "connector",
+    "driver",
+    "postgres",
+    "mysql",
+    "mariadb",
+    "sqlite",
+    "metadata",
+    "introspection"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "prepack": "npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "peerDependencies": {
+    "@jugaaadi/db-browser": "^0.0.1"
+  },
+  "//": "Every driver is an OPTIONAL peer. That is the whole point of this package: the registry lists every engine with nothing installed, and a driver is downloaded only when a connection needs it. Adding one of these to `dependencies` would ship the connectors, which is exactly what the design refuses to do.",
+  "peerDependenciesMeta": {
+    "pg": {
+      "optional": true
+    },
+    "mysql2": {
+      "optional": true
+    },
+    "mssql": {
+      "optional": true
+    },
+    "oracledb": {
+      "optional": true
+    },
+    "@duckdb/node-api": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@jugaaadi/db-browser": "^0.0.1",
+    "@types/node": "^22.10.5",
+    "typescript": "^5.6.3"
+  }
+}

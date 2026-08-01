@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { planPage } from '@jugaaadi/db-browser/core'
+import { finalizeColumn, planPage } from '@jugaaadi/db-browser/core'
+import { POSTGRES_TYPE_MAP } from '@jugaaadi/db-browser-connectors'
 import type { ColumnMeta } from '@jugaaadi/db-browser/core'
 import {
   Binder,
@@ -14,17 +15,26 @@ import {
   wrapWithLimit,
 } from '../src/sqlBuilder.js'
 
+/**
+ * `finalizeColumn` fills the metadata-driven half (`dbType`,
+ * `normalizedType`, `isForeignKey`, `references`) from a type map, exactly as
+ * every adapter's introspector does — so a fixture built here has the same
+ * shape as one that came out of a real database.
+ */
 function col(name: string, over: Partial<ColumnMeta> = {}): ColumnMeta {
-  return {
-    name,
-    dataType: 'text',
-    udtName: 'text',
-    category: 'string',
-    nullable: true,
-    isPrimaryKey: false,
-    ordinal: 1,
-    ...over,
-  }
+  return finalizeColumn(
+    {
+      name,
+      dataType: 'text',
+      udtName: 'text',
+      category: 'string',
+      nullable: true,
+      isPrimaryKey: false,
+      ordinal: 1,
+      ...over,
+    },
+    POSTGRES_TYPE_MAP,
+  )
 }
 
 const columns: ColumnMeta[] = [

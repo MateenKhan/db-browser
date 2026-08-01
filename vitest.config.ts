@@ -9,6 +9,8 @@ export default defineConfig({
       // Test the sources, so the suite never depends on build order.
       '@jugaaadi/db-browser/core': src('./packages/db-browser/src/core.ts'),
       '@jugaaadi/db-browser': src('./packages/db-browser/src/index.ts'),
+      // Test the connectors' sources too, so the suite never depends on build order.
+      '@jugaaadi/db-browser-connectors': src('./packages/db-browser-connectors/src/index.ts'),
     },
   },
   test: {

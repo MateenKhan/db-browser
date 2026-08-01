@@ -8,3 +8,7 @@ dist/
 *.tsbuildinfo
 .vite/
 coverage/
+
+# The server-owned connection store: a JSON file of connection settings and
+# a 0600 AES key beside it. Neither belongs in version control.
+.db-browser/

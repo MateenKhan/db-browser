@@ -22,6 +22,14 @@ export interface BinaryPlaceholder {
   __dbbBinary: true
   bytes: number | null
   contentType?: string | null
+  /**
+   * Set when the adapter knows the blob is an embedding vector. It changes only
+   * the *label*: the bytes are still never fetched for a grid render, because
+   * 768 floats is not a value a cell can usefully show — it is a wall of digits
+   * that pushes every other column off screen and takes 3 KB per row to do it.
+   */
+  dims?: number | null
+  model?: string | null
 }
 
 export function isBinaryPlaceholder(v: unknown): v is BinaryPlaceholder {
@@ -41,11 +49,29 @@ export function formatBytes(bytes: number | null | undefined): string {
   return `${value.toFixed(value < 10 ? 1 : 0)} ${units[i]}`
 }
 
+/**
+ * `768 dims · 3.0 KB`. A vector cell says what it *is* rather than how big it
+ * is, because the dimension count is the number that actually tells you
+ * something — it identifies the model family and is what has to match for a
+ * similarity comparison to mean anything. The size is kept alongside it as the
+ * sanity check: `dims × 4` should equal the bytes, and when it does not, the
+ * row is corrupt and the cell now shows you so.
+ */
+export function formatVectorCell(v: BinaryPlaceholder): string {
+  const size = formatBytes(v.bytes)
+  if (v.dims == null) return `[vector · ${size}]`
+  const expected = v.dims * 4
+  const mismatch = v.bytes != null && v.bytes !== expected ? ' ⚠ size mismatch' : ''
+  return `${v.dims.toLocaleString()} dims · ${size}${mismatch}`
+}
+
 /** Render a value for the grid. Always returns a string. */
 export function toDisplay(value: unknown, category?: ValueCategory): string {
   if (value === null || value === undefined) return NULL_DISPLAY
   if (isBinaryPlaceholder(value)) {
-    return `[binary · ${formatBytes(value.bytes)}]`
+    return value.dims != null || category === 'vector'
+      ? formatVectorCell(value)
+      : `[binary · ${formatBytes(value.bytes)}]`
   }
   if (value instanceof Date) return value.toISOString()
   if (category === 'boolean') return value === true ? 'true' : value === false ? 'false' : String(value)
@@ -69,6 +95,14 @@ export type CoerceResult =
 export function fromDisplay(text: string, column: Pick<ColumnMeta, 'category' | 'name'>): CoerceResult {
   if (text === NULL_DISPLAY) return { ok: true, value: null }
   const category = column.category
+  if (category === 'vector') {
+    return {
+      ok: false,
+      error:
+        `Column "${column.name}" holds an embedding vector. It is derived data — ` +
+        'rebuild the index rather than editing a vector by hand.',
+    }
+  }
   if (category === 'binary') {
     return {
       ok: false,

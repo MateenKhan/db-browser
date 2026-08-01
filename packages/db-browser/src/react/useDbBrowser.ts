@@ -43,7 +43,39 @@ import type {
 export interface UseDbBrowserOptions {
   defaultLimit?: number
   maxLimit?: number
+  /**
+   * How long an *opening* request — the table list, a table's schema — may run
+   * before the UI stops calling it "loading" and starts calling it a problem.
+   * See {@link OPEN_TIMEOUT_MS}.
+   */
+  openTimeoutMs?: number
 }
+
+/**
+ * When a request to open a connection stops being slow and starts being broken.
+ *
+ * A `fetch` has no timeout of its own. If the server accepts the socket and
+ * then never answers — a Postgres pool waiting on a host that silently drops
+ * packets is the classic case — the promise simply never settles, `.catch()`
+ * never fires, and the sidebar sits on **"Loading tables…" forever**. Nothing
+ * is on fire, nothing is logged, and the user has no way to tell that state
+ * apart from a large schema.
+ *
+ * Twenty seconds is chosen against the server's own limit rather than by feel:
+ * the demo caps a statement at 15 s (`DB_BROWSER_TIMEOUT_MS`), so a schema read
+ * still outstanding at 20 s is not a slow query — it is a connection that is
+ * not going to answer. The spinner is then replaced by a sentence saying so and
+ * the Re-read button, which is a state a user can act on.
+ *
+ * Note what this does **not** do: it does not cancel the request. If a late
+ * answer does arrive it is still accepted and clears the message — reporting a
+ * hang and then discarding the reply would be its own small lie.
+ */
+export const OPEN_TIMEOUT_MS = 20_000
+
+const slowMessage = (what: string, ms: number): string =>
+  `The server has not returned ${what} after ${Math.round(ms / 1000)} seconds. ` +
+  'The connection is most likely unreachable or blocked rather than slow — check the source, then try again.'
 
 export interface CommitOutcome {
   applied: number
@@ -109,6 +141,7 @@ export function useDbBrowser(
   options: UseDbBrowserOptions = {},
 ): DbBrowserState {
   const maxLimit = options.maxLimit ?? 1000
+  const openTimeoutMs = options.openTimeoutMs ?? OPEN_TIMEOUT_MS
   const [tables, setTables] = useState<TableMeta[]>([])
   const [tablesLoading, setTablesLoading] = useState(false)
   const [tablesError, setTablesError] = useState<string | null>(null)
@@ -143,21 +176,33 @@ export function useDbBrowser(
     let cancelled = false
     setTablesLoading(true)
     setTablesError(null)
+    // The watchdog, not a cancellation: see OPEN_TIMEOUT_MS. It turns a promise
+    // that never settles from an eternal spinner into a stated reason.
+    const watchdog = setTimeout(() => {
+      if (cancelled) return
+      setTablesLoading(false)
+      setTablesError(slowMessage('the table list', openTimeoutMs))
+    }, openTimeoutMs)
     dataSource
       .listTables()
       .then((list) => {
-        if (!cancelled) setTables(list)
+        if (cancelled) return
+        setTables(list)
+        // A late answer is still an answer: clear the "it is not coming" note.
+        setTablesError(null)
       })
       .catch((e) => {
         if (!cancelled) setTablesError(message(e))
       })
       .finally(() => {
+        clearTimeout(watchdog)
         if (!cancelled) setTablesLoading(false)
       })
     return () => {
       cancelled = true
+      clearTimeout(watchdog)
     }
-  }, [dataSource, tablesNonce])
+  }, [dataSource, tablesNonce, openTimeoutMs])
 
   // -- schema --------------------------------------------------------------
   useEffect(() => {
@@ -167,9 +212,15 @@ export function useDbBrowser(
     }
     let cancelled = false
     setError(null)
+    // Describing a table is the other half of "open this connection", and it
+    // hangs for the same reasons. Same watchdog, same reasoning.
+    const watchdog = setTimeout(() => {
+      if (!cancelled) setError(slowMessage(`the columns of ${active.schema}.${active.name}`, openTimeoutMs))
+    }, openTimeoutMs)
     dataSource
       .describeTable(active)
       .then((s) => {
+        clearTimeout(watchdog)
         if (cancelled) return
         setSchema(s)
         setSchemas((prev) => {
@@ -179,12 +230,14 @@ export function useDbBrowser(
         })
       })
       .catch((e) => {
+        clearTimeout(watchdog)
         if (!cancelled) setError(message(e))
       })
     return () => {
       cancelled = true
+      clearTimeout(watchdog)
     }
-  }, [dataSource, active])
+  }, [dataSource, active, openTimeoutMs])
 
   // -- rows ----------------------------------------------------------------
   useEffect(() => {

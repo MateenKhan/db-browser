@@ -7,10 +7,12 @@
  */
 
 import { DbBrowserError } from '../types.js'
+import { asDialect, DEFAULT_DIALECT } from '../sql/dialect.js'
 import type {
   BinaryCellData,
   DataSource,
   DataSourceCapabilities,
+  DatabaseProfile,
   Page,
   PkValues,
   QueryResult,
@@ -26,6 +28,7 @@ import type {
   BinaryResponse,
   DescribeResponse,
   ErrorBody,
+  ProfileResponse,
   QueryResponse,
   RowResponse,
   SelectResponse,
@@ -55,6 +58,9 @@ export function createHttpDataSource(options: HttpDataSourceOptions): DataSource
     writes: false,
     keyset: true,
     binaryFetch: false,
+    // Assume the safest/most common engine until the server says otherwise.
+    // `refreshCapabilities()` replaces this with the truth on first load.
+    dialect: DEFAULT_DIALECT,
     ...options.capabilities,
   }
 
@@ -92,8 +98,16 @@ export function createHttpDataSource(options: HttpDataSourceOptions): DataSource
 
     async refreshCapabilities() {
       const r = await call<{ capabilities: DataSourceCapabilities }>(DB_BROWSER_ROUTES.capabilities)
-      caps = { ...caps, ...r.capabilities }
+      // The dialect drives the editor's grammar and the guard's denylist, so
+      // an unrecognised value must fall back to a known one rather than be
+      // handed straight to CodeMirror.
+      caps = { ...caps, ...r.capabilities, dialect: asDialect(r.capabilities?.dialect) }
       return caps
+    },
+
+    async describeDatabase(): Promise<DatabaseProfile> {
+      const r = await call<ProfileResponse>(DB_BROWSER_ROUTES.profile)
+      return r.profile
     },
 
     async listTables(): Promise<TableMeta[]> {

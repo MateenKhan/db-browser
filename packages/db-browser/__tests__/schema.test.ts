@@ -1,3 +1,4 @@
+import { finalizeColumn } from '../src/schema.js'
 import { describe, expect, it } from 'vitest'
 import {
   buildTableSchema,
@@ -9,7 +10,7 @@ import {
 import type { ColumnMeta } from '../src/types.js'
 
 function col(name: string, over: Partial<ColumnMeta> = {}): ColumnMeta {
-  return {
+  return finalizeColumn({
     name,
     dataType: 'text',
     udtName: 'text',
@@ -18,7 +19,7 @@ function col(name: string, over: Partial<ColumnMeta> = {}): ColumnMeta {
     isPrimaryKey: false,
     ordinal: 1,
     ...over,
-  }
+  })
 }
 
 describe('categoryForType', () => {

@@ -9,7 +9,8 @@
  */
 
 import type { PoolClient } from 'pg'
-import { categoryForType, quoteIdent } from '@jugaaadi/db-browser/core'
+import { categoryForType, finalizeColumn, quoteIdent } from '@jugaaadi/db-browser/core'
+import { POSTGRES_TYPE_MAP } from '@jugaaadi/db-browser-connectors'
 import type { ColumnMeta, TableKind, TableMeta, TableRef } from '@jugaaadi/db-browser/core'
 
 const KIND_BY_RELKIND: Record<string, TableKind> = {
@@ -152,21 +153,30 @@ export async function describeColumns(client: PoolClient, table: TableRef): Prom
     const dataType = String(r.data_type)
     const enumValues = toStringArray(r.enum_values)
     const category = categoryForType(udtName, dataType, enumValues)
-    return {
-      name: String(r.name),
-      dataType,
-      udtName,
-      category,
-      nullable: Boolean(r.nullable),
-      isPrimaryKey: pkByName.has(String(r.name)),
-      primaryKeyPosition: pkByName.get(String(r.name)) ?? null,
-      foreignKey: fkByName.get(String(r.name)) ?? null,
-      defaultValue: (r.default_value as string | null) ?? null,
-      ordinal: Number(r.ordinal),
-      enumValues,
-      isBinary: category === 'binary',
-      comment: (r.comment as string | null) ?? null,
-      readOnly: Boolean(r.generated),
-    }
+    // `finalizeColumn` fills the metadata-driven half (`dbType`,
+    // `normalizedType`, `isForeignKey`, `references`) from the descriptor's
+    // type map, so both vocabularies always agree. See core's `schema.ts`.
+    return finalizeColumn(
+      {
+        name: String(r.name),
+        dataType,
+        udtName,
+        category,
+        nullable: Boolean(r.nullable),
+        isPrimaryKey: pkByName.has(String(r.name)),
+        primaryKeyPosition: pkByName.get(String(r.name)) ?? null,
+        foreignKey: fkByName.get(String(r.name)) ?? null,
+        defaultValue: (r.default_value as string | null) ?? null,
+        ordinal: Number(r.ordinal),
+        enumValues,
+        isBinary: category === 'binary',
+        comment: (r.comment as string | null) ?? null,
+        readOnly: Boolean(r.generated),
+        // An enum's `typname` is the enum *type's* name, which no type map can
+        // enumerate — so it is pinned from the fact that labels came back.
+        ...(enumValues && enumValues.length ? { normalizedType: 'enum' as const } : {}),
+      },
+      POSTGRES_TYPE_MAP,
+    )
   })
 }

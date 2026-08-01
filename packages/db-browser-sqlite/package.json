@@ -1,0 +1,52 @@
+{
+  "name": "@jugaaadi/db-browser-sqlite",
+  "version": "0.0.1",
+  "description": "SQLite DataSource + HTTP server for @jugaaadi/db-browser, with vector-store and code-graph detection. Node only.",
+  "license": "MIT",
+  "author": "Mateen Khan",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "sqlite",
+    "database",
+    "browser",
+    "embeddings",
+    "vector",
+    "semantic-search",
+    "code-graph"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "prepack": "npm run build"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "peerDependencies": {
+    "@jugaaadi/db-browser": "^0.0.1",
+    "better-sqlite3": ">=11",
+    "@jugaaadi/db-browser-connectors": "^0.0.1"
+  },
+  "peerDependenciesMeta": {
+    "better-sqlite3": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@jugaaadi/db-browser": "^0.0.1",
+    "@types/node": "^22.10.5",
+    "typescript": "^5.6.3",
+    "@jugaaadi/db-browser-connectors": "^0.0.1"
+  }
+}

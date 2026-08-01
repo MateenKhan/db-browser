@@ -4,6 +4,8 @@
  */
 
 import type { ColumnMeta, TableKind, TableSchema, ValueCategory } from './types.js'
+import { normalizedTypeFor } from './metadata/normalizedTypes.js'
+import type { NormalizedType } from './metadata/normalizedTypes.js'
 
 const NUMERIC = new Set([
   'int2', 'int4', 'int8', 'smallint', 'integer', 'bigint', 'decimal', 'numeric',
@@ -46,6 +48,79 @@ export function categoryForType(
   if (BINARY.has(udt) || BINARY.has(dt)) return 'binary'
   if (STRINGY.has(udt) || dt.startsWith('character')) return 'string'
   return 'other'
+}
+
+/**
+ * The bridge in the *other* direction: a `ValueCategory` to a
+ * `NormalizedType`.
+ *
+ * This is the safety net, not the main path. The main path is a connector
+ * descriptor's `typeMap`, which knows the engine's own spellings. This one
+ * exists so an adapter that predates descriptors — or a `DataSource` a
+ * consumer wrote themselves — still produces a populated `normalizedType`
+ * instead of leaving the field undefined for the grid to trip over.
+ *
+ * Two categories have no exact counterpart and are mapped deliberately:
+ * `interval` becomes `'string'` (it is rendered and edited as its text form,
+ * e.g. `1 day 02:00:00`, because no engine agrees on a numeric encoding), and
+ * `other` becomes `'unknown'`, which is the same "display it, do not pretend
+ * to understand it" contract.
+ */
+const CATEGORY_TO_NORMALIZED: Record<ValueCategory, NormalizedType> = {
+  number: 'decimal',
+  string: 'string',
+  boolean: 'boolean',
+  date: 'date',
+  time: 'time',
+  timestamp: 'timestamp',
+  interval: 'string',
+  json: 'json',
+  uuid: 'uuid',
+  array: 'array',
+  enum: 'enum',
+  binary: 'binary',
+  vector: 'vector',
+  other: 'unknown',
+}
+
+export function normalizedTypeForCategory(category: ValueCategory | undefined): NormalizedType {
+  return CATEGORY_TO_NORMALIZED[category ?? 'other'] ?? 'unknown'
+}
+
+/**
+ * Fill in every derived field on a column so both vocabularies always agree.
+ *
+ * Adapters build the engine-specific half (`name`, `dataType`, `udtName`,
+ * `category`, keys, defaults) and hand it here; this fills `dbType`,
+ * `normalizedType`, `isForeignKey` and `references`. Doing it in one shared
+ * place is what stops the two vocabularies drifting — the alternative is four
+ * adapters each remembering to set six fields, and the first one to forget
+ * ships a column the grid cannot type.
+ *
+ * `typeMap` is the connector descriptor's. When it is absent, or when it does
+ * not know this type, `category` is used as the fallback rather than jumping
+ * straight to `'unknown'`: the category was computed from the same raw name by
+ * engine-specific code that may well know better than a generic dictionary
+ * (SQLite's affinity rules are the worked example).
+ */
+export function finalizeColumn(
+  column: Omit<ColumnMeta, 'dbType' | 'normalizedType' | 'isForeignKey'> &
+    Partial<Pick<ColumnMeta, 'dbType' | 'normalizedType' | 'isForeignKey'>>,
+  typeMap?: Readonly<Record<string, NormalizedType>>,
+): ColumnMeta {
+  const dbType = (column.dbType ?? column.udtName ?? column.dataType ?? '').toLowerCase()
+  const mapped = column.normalizedType ?? (typeMap ? normalizedTypeFor(dbType, typeMap) : 'unknown')
+  const normalizedType =
+    mapped === 'unknown' ? normalizedTypeForCategory(column.category) : mapped
+  const fk = column.foreignKey ?? null
+  return {
+    ...column,
+    dbType,
+    normalizedType,
+    isForeignKey: column.isForeignKey ?? fk !== null,
+    references:
+      column.references ?? (fk ? { table: fk.table, column: fk.column } : null),
+  }
 }
 
 /** Primary-key column names in key order. */
@@ -94,6 +169,21 @@ export function describeUpdatability(input: UpdatabilityInput): Updatability {
   }
   if (input.kind === 'foreign') {
     return { updatable: false, primaryKey, reason: 'Foreign tables are opened read-only.' }
+  }
+  if (input.kind === 'virtual') {
+    // A virtual table's rows are produced by an extension module (FTS5,
+    // R*Tree), and its shadow tables are that module's private storage. Both
+    // accept writes in principle, and both can be corrupted by one, because the
+    // module's invariants are not expressed as constraints the database will
+    // enforce on your behalf. A declared PRIMARY KEY on a shadow table does not
+    // change that, which is why this is checked *before* the key rule.
+    return {
+      updatable: false,
+      primaryKey,
+      reason:
+        'This is a virtual table, or the internal storage of one. Its rows are maintained by an ' +
+        'extension module, so writing to it directly can corrupt the index it backs.',
+    }
   }
   if (!primaryKey.length) {
     return {

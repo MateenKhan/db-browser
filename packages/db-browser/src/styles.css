@@ -78,8 +78,9 @@
 .dbb-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 8px;
+  padding: 5px 10px;
+  min-height: 42px;
   border-bottom: 1px solid var(--dbb-border);
   background: var(--dbb-surface-2);
   flex: 0 0 auto;
@@ -88,7 +89,12 @@
 
 .dbb-brand {
   font-weight: 650;
+  font-size: 13px;
   letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 26ch;
 }
 
 .dbb-body {
@@ -98,8 +104,8 @@
 }
 
 .dbb-sidebar {
-  width: 260px;
-  flex: 0 0 260px;
+  width: 232px;
+  flex: 0 0 232px;
   border-right: 1px solid var(--dbb-border);
   background: var(--dbb-surface-2);
   display: flex;
@@ -109,23 +115,28 @@
 
 .dbb-sidebar-head {
   display: flex;
-  gap: 6px;
-  padding: 10px;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 6px;
   border-bottom: 1px solid var(--dbb-border);
 }
 
 .dbb-sidebar-scroll {
   overflow: auto;
-  padding: 6px 0 20px;
+  padding: 2px 0 16px;
   min-height: 0;
 }
 
 .dbb-schema-name {
-  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   color: var(--dbb-text-muted);
-  padding: 10px 12px 4px;
+  padding: 8px 8px 3px;
 }
 
 .dbb-sidebar ul {
@@ -137,14 +148,17 @@
 .dbb-table-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   width: 100%;
   text-align: left;
-  padding: 6px 12px;
+  padding: 3px 8px;
   border: 0;
+  border-radius: 0;
+  min-height: 25px;
   background: transparent;
   color: inherit;
   font: inherit;
+  font-size: 13px;
   cursor: pointer;
   border-left: 2px solid transparent;
   transition: background 120ms var(--dbb-ease);
@@ -159,7 +173,8 @@
 .dbb-table-count {
   margin-left: auto;
   font-variant-numeric: tabular-nums;
-  font-size: 12px;
+  font-size: 11px;
+  flex: 0 0 auto;
 }
 
 @media (hover: hover) {
@@ -186,13 +201,18 @@
 /* ---------- controls ---------- */
 
 .dbb-root button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   font: inherit;
+  font-size: 13px;
   color: inherit;
   background: var(--dbb-surface);
   border: 1px solid var(--dbb-border-strong);
   border-radius: var(--dbb-radius-sm);
-  padding: 4px 10px;
-  min-height: 30px;
+  padding: 3px 9px;
+  min-height: 27px;
+  white-space: nowrap;
   cursor: pointer;
   transition:
     background 120ms var(--dbb-ease),
@@ -241,14 +261,16 @@
 }
 
 .dbb-root input,
-.dbb-root select {
+.dbb-root select,
+.dbb-root textarea {
   font: inherit;
+  font-size: 13px;
   color: inherit;
   background: var(--dbb-surface);
   border: 1px solid var(--dbb-border-strong);
   border-radius: var(--dbb-radius-sm);
-  padding: 4px 6px;
-  min-height: 30px;
+  padding: 3px 6px;
+  min-height: 27px;
 }
 
 .dbb-search {
@@ -259,7 +281,7 @@
 .dbb-field {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   color: var(--dbb-text-muted);
   font-size: 12px;
   white-space: nowrap;
@@ -294,8 +316,8 @@
 .dbb-toolbar-row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
+  gap: 8px;
+  padding: 5px 8px;
   flex-wrap: wrap;
 }
 
@@ -305,22 +327,46 @@
 }
 
 .dbb-table-title {
-  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  max-width: 32ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .dbb-pager {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 2px;
 }
 
 .dbb-page-label {
   font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  padding: 0 4px;
+  min-width: 2ch;
+  text-align: center;
+}
+
+.dbb-total {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
+.dbb-filter-value {
+  width: 12ch;
+}
+
 .dbb-hint {
-  padding: 4px 12px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 6px;
   font-size: 12px;
   color: var(--dbb-text-muted);
 }
@@ -377,10 +423,10 @@
 .dbb-banner {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   flex-wrap: wrap;
-  padding: 8px 12px;
-  font-size: 13px;
+  padding: 6px 10px;
+  font-size: 12.5px;
   border-bottom: 1px solid var(--dbb-border);
   background: var(--dbb-info-bg);
 }
@@ -412,9 +458,25 @@
 }
 
 .dbb-empty {
-  padding: 32px;
+  padding: 24px;
   color: var(--dbb-text-muted);
   text-align: center;
+}
+
+/* The "nothing here yet" states earn more room and a glyph, because they are
+   the only place a first-time user is told what to do next. */
+.dbb-empty-lg {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px 24px;
+}
+
+.dbb-empty-lg p {
+  margin: 0;
+  max-width: 54ch;
 }
 
 .dbb-col {
@@ -506,8 +568,8 @@
 .dbb-console-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
+  gap: 8px;
+  padding: 5px 8px;
   border-bottom: 1px solid var(--dbb-border);
   background: var(--dbb-surface-2);
   flex-wrap: wrap;
@@ -560,7 +622,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 6px 12px;
+  padding: 5px 10px;
   font-size: 12px;
   color: var(--dbb-text-muted);
   border-bottom: 1px solid var(--dbb-border);
@@ -577,8 +639,8 @@
 .dbb-tabs {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
+  gap: 2px;
+  padding: 4px 10px;
 }
 
 .dbb-root .dbb-tab {
@@ -704,4 +766,1825 @@
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* =========================================================================
+   Vector-store and code-graph modes
+   =========================================================================
+
+   These two modes must be *visually unmistakable* from the relational grid — a
+   similarity score misread as a row count is a real failure, and the only thing
+   preventing it is that the two screens do not look alike. So the special modes
+   get their own accent (`--dbb-vector`, `--dbb-graph`), their own iconography
+   (see `react/icons.tsx`), and a card/list rhythm rather than the grid's dense
+   rows.
+
+   Both accents are new tokens rather than hardcoded colours, so a consumer can
+   restyle them the same way they restyle everything else here. Contrast is
+   checked against `--dbb-surface` in both themes; the dark overrides at the end
+   of this block are what keep it that way. */
+
+.dbb-root {
+  --dbb-vector: #6d28d9;
+  --dbb-vector-bg: #f5f3ff;
+  --dbb-graph: #0369a1;
+  --dbb-graph-bg: #f0f9ff;
+  --dbb-score: #7c3aed;
+}
+
+/* ---------- mode chips ---------- */
+
+.dbb-mode-chip,
+.dbb-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.dbb-mode-chip {
+  padding: 2px 10px;
+  font-size: 12px;
+}
+
+.dbb-mode-badge {
+  padding: 4px 12px;
+  font-size: 14px;
+}
+
+.dbb-mode-vector {
+  background: var(--dbb-vector-bg);
+  color: var(--dbb-vector);
+}
+
+.dbb-mode-graph {
+  background: var(--dbb-graph-bg);
+  color: var(--dbb-graph);
+}
+
+.dbb-table-backing {
+  display: inline-flex;
+  color: var(--dbb-vector);
+  flex: 0 0 auto;
+}
+
+/* ---------- shared shell for both special modes ---------- */
+
+.dbb-vector,
+.dbb-graph {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow: auto;
+}
+
+.dbb-vector-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--dbb-border);
+  background: var(--dbb-surface-2);
+}
+
+.dbb-vector-sub {
+  font-size: 13px;
+  max-width: 62ch;
+}
+
+.dbb-vector-foot {
+  margin-top: auto;
+  border-top: 1px solid var(--dbb-border);
+  background: var(--dbb-surface-2);
+  padding: 7px 12px;
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+}
+
+/* ---------- stats header ---------- */
+
+.dbb-stats {
+  display: grid;
+  /* auto-fit so six stats sit on one row on a wide screen and reflow to two
+     columns on a narrow one, with no per-breakpoint media query. */
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1px;
+  background: var(--dbb-border);
+  border-bottom: 1px solid var(--dbb-border);
+}
+
+.dbb-stat {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 12px;
+  background: var(--dbb-surface);
+  min-width: 0;
+}
+
+.dbb-stat-icon {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.dbb-stat-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dbb-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--dbb-text-muted);
+}
+
+.dbb-stat-value {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dbb-root button.dbb-stat-value {
+  border: 0;
+  background: none;
+  padding: 0;
+  min-height: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* ---------- the search box: the primary control ---------- */
+
+.dbb-search-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 6px;
+  flex-wrap: wrap;
+}
+
+.dbb-search-icon {
+  display: inline-flex;
+}
+
+.dbb-search-box {
+  /* Deliberately the widest element on the screen. This is the reason the
+     vector view exists, and it should read as such before anything else. */
+  flex: 1 1 380px;
+  min-width: 0;
+  font: inherit;
+  font-size: 14px;
+  padding: 7px 12px;
+  min-height: 34px;
+  color: inherit;
+  background: var(--dbb-surface);
+  border: 1px solid var(--dbb-border-strong);
+  border-radius: var(--dbb-radius);
+  transition:
+    border-color 120ms var(--dbb-ease),
+    box-shadow 120ms var(--dbb-ease);
+}
+
+.dbb-search-box:focus {
+  outline: none;
+  border-color: var(--dbb-vector);
+  box-shadow: 0 0 0 3px var(--dbb-vector-bg);
+}
+
+.dbb-search-box:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.dbb-search-hint {
+  gap: 10px;
+  color: var(--dbb-text-muted);
+}
+
+.dbb-search-hint p {
+  max-width: 52ch;
+  margin: 0;
+}
+
+/* ---------- results ---------- */
+
+.dbb-vector-results {
+  padding: 0 12px 12px;
+}
+
+.dbb-hits {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: opacity 120ms var(--dbb-ease);
+}
+
+/* A search in flight keeps the previous results on screen, dimmed, rather than
+   blanking them: comparing a new result against the last one is how people
+   refine a query. */
+.dbb-hits-stale {
+  opacity: 0.5;
+}
+
+.dbb-hit {
+  border: 1px solid var(--dbb-border);
+  border-radius: var(--dbb-radius);
+  background: var(--dbb-surface);
+  overflow: hidden;
+  transition: border-color 120ms var(--dbb-ease);
+}
+
+@media (hover: hover) {
+  .dbb-hit:hover {
+    border-color: var(--dbb-vector);
+  }
+}
+
+.dbb-hit-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 5px 10px;
+  background: var(--dbb-surface-2);
+  border-bottom: 1px solid var(--dbb-border);
+}
+
+.dbb-hit-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--dbb-vector-bg);
+  color: var(--dbb-vector);
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.dbb-hit-path {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--dbb-mono);
+  font-size: 13px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dbb-hit-symbol {
+  font-family: var(--dbb-mono);
+  font-size: 12px;
+  padding: 1px 6px;
+  border-radius: var(--dbb-radius-sm);
+  background: var(--dbb-vector-bg);
+  color: var(--dbb-vector);
+}
+
+/* ---------- relevance: a bar AND a number ---------- */
+
+.dbb-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dbb-score-bar {
+  display: block;
+  width: 84px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--dbb-surface-3);
+  overflow: hidden;
+}
+
+.dbb-score-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--dbb-score);
+  transition: width 200ms var(--dbb-ease);
+}
+
+.dbb-score-value {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dbb-text-muted);
+  min-width: 3ch;
+  text-align: right;
+}
+
+/* ---------- snippet ---------- */
+
+.dbb-snippet {
+  margin: 0;
+  padding: 10px 12px;
+  overflow-x: auto;
+  font-family: var(--dbb-mono);
+  font-size: 12.5px;
+  line-height: 1.55;
+  /* Code output is one of the documented dark-surface exceptions: a
+     terminal-style block reads as code at a glance and keeps one token palette
+     legible instead of needing a second one for light mode. */
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.dbb-snippet code {
+  display: block;
+  min-width: max-content;
+}
+
+.dbb-snippet-line {
+  display: block;
+  white-space: pre;
+}
+
+.dbb-snippet-ln {
+  display: inline-block;
+  width: 4ch;
+  margin-right: 12px;
+  text-align: right;
+  color: #64748b;
+  user-select: none;
+}
+
+.dbb-snippet-more {
+  display: block;
+  margin-top: 6px;
+  color: #64748b;
+  font-style: italic;
+}
+
+.dbb-tok-comment { color: #94a3b8; font-style: italic; }
+.dbb-tok-string  { color: #86efac; }
+.dbb-tok-number  { color: #fca5a5; }
+.dbb-tok-keyword { color: #c4b5fd; }
+.dbb-tok-symbol  { color: #fcd34d; font-weight: 600; }
+
+/* ---------- rebuild + progress ---------- */
+
+.dbb-rebuild {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dbb-rebuild-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dbb-root .dbb-rebuild-bar button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dbb-rebuild-pct {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--dbb-vector);
+  min-width: 4ch;
+}
+
+.dbb-rebuild-counts,
+.dbb-rebuild-msg {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dbb-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--dbb-surface-3);
+  overflow: hidden;
+}
+
+.dbb-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--dbb-vector);
+  transition: width 300ms var(--dbb-ease);
+}
+
+.dbb-phases {
+  display: flex;
+  gap: 6px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+.dbb-phase {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--dbb-surface-3);
+  color: var(--dbb-text-muted);
+}
+
+.dbb-phase-done {
+  background: var(--dbb-read-bg);
+  color: var(--dbb-read);
+}
+
+.dbb-phase-active {
+  background: var(--dbb-vector);
+  color: #ffffff;
+}
+
+.dbb-spin {
+  animation: dbb-spin 900ms linear infinite;
+}
+
+@keyframes dbb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- code-graph histograms ---------- */
+
+.dbb-graph-grids {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 12px;
+}
+
+.dbb-histogram h3,
+.dbb-meta h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--dbb-text-muted);
+}
+
+.dbb-histogram ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dbb-histogram li {
+  display: grid;
+  grid-template-columns: minmax(80px, 30%) 1fr auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.dbb-hist-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--dbb-mono);
+  font-size: 12px;
+}
+
+.dbb-hist-bar {
+  display: block;
+  height: 10px;
+  border-radius: var(--dbb-radius-sm);
+  background: var(--dbb-surface-3);
+  overflow: hidden;
+}
+
+.dbb-hist-fill {
+  display: block;
+  height: 100%;
+  background: var(--dbb-graph);
+}
+
+.dbb-hist-count {
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--dbb-text-muted);
+}
+
+.dbb-meta {
+  padding: 0 12px 12px;
+}
+
+.dbb-meta dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+.dbb-meta dt {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--dbb-text-muted);
+}
+
+.dbb-meta dd {
+  margin: 0;
+  font-family: var(--dbb-mono);
+  font-size: 12px;
+  word-break: break-all;
+}
+
+/* ---------- dark theme ---------- */
+
+@media (prefers-color-scheme: dark) {
+  .dbb-root:not([data-theme='light']) {
+    --dbb-vector: #c4b5fd;
+    --dbb-vector-bg: #2e1065;
+    --dbb-graph: #7dd3fc;
+    --dbb-graph-bg: #082f49;
+    --dbb-score: #a78bfa;
+  }
+
+  /* The active-phase pill inverts onto the accent, so it needs a dark
+     foreground once that accent is a light lavender. */
+  .dbb-root:not([data-theme='light']) .dbb-phase-active {
+    color: #1e1b4b;
+  }
+}
+
+.dbb-root[data-theme='dark'] {
+  --dbb-vector: #c4b5fd;
+  --dbb-vector-bg: #2e1065;
+  --dbb-graph: #7dd3fc;
+  --dbb-graph-bg: #082f49;
+  --dbb-score: #a78bfa;
+}
+
+.dbb-root[data-theme='dark'] .dbb-phase-active {
+  color: #1e1b4b;
+}
+
+/* ---------- kind + path filters ----------
+
+   Placed directly under the search box, at full width, because the failure
+   they fix is one the user hits on their *first* conceptual query: a prose
+   question ranks documentation above the code that implements it, and the
+   remedy has to be visible at the moment those results are read — not behind a
+   "filters" disclosure they would only open after concluding the search does
+   not work. */
+
+.dbb-filters {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 0 12px 8px;
+}
+
+.dbb-kinds {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.dbb-kinds-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--dbb-text-muted);
+}
+
+.dbb-kinds-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--dbb-border-strong);
+}
+
+/* Chips are buttons, so they inherit the root button reset; these overrides
+   turn them into pills and give the pressed state real weight — an unselected
+   filter that looks almost like a selected one is worse than no filter. */
+.dbb-root .dbb-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 9px;
+  min-height: 24px;
+  border-radius: 999px;
+  font-size: 12px;
+  background: var(--dbb-surface);
+  border: 1px solid var(--dbb-border-strong);
+  color: var(--dbb-text-muted);
+}
+
+.dbb-root .dbb-chip-on {
+  background: var(--dbb-vector-bg);
+  border-color: var(--dbb-vector);
+  color: var(--dbb-vector);
+  font-weight: 600;
+}
+
+.dbb-root .dbb-chip-code.dbb-chip-on {
+  background: var(--dbb-read-bg);
+  border-color: var(--dbb-read);
+  color: var(--dbb-read);
+}
+
+.dbb-chip-count {
+  font-variant-numeric: tabular-nums;
+  font-size: 10px;
+  opacity: 0.75;
+}
+
+.dbb-path-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--dbb-text-muted);
+}
+
+.dbb-path-filter input {
+  font: inherit;
+  font-family: var(--dbb-mono);
+  font-size: 12px;
+  padding: 3px 8px;
+  width: 14ch;
+  color: var(--dbb-text);
+  background: var(--dbb-surface);
+  border: 1px solid var(--dbb-border-strong);
+  border-radius: var(--dbb-radius-sm);
+}
+
+/* ---------- kind badges on a result row ----------
+
+   Two channels — colour AND an icon — because this is the single distinction
+   the user most needs to make at a glance, and colour alone would fail anyone
+   with a colour-vision deficiency on exactly the case that matters. */
+
+.dbb-kind-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: lowercase;
+  background: var(--dbb-surface-3);
+  color: var(--dbb-text-muted);
+}
+
+.dbb-kind-doc {
+  background: var(--dbb-write-bg);
+  color: var(--dbb-write);
+}
+
+.dbb-kind-code {
+  background: var(--dbb-read-bg);
+  color: var(--dbb-read);
+}
+
+.dbb-kind-file {
+  background: var(--dbb-info-bg);
+  color: #1d4ed8;
+}
+
+@media (prefers-color-scheme: dark) {
+  .dbb-root:not([data-theme='light']) .dbb-kind-file {
+    color: #93c5fd;
+  }
+}
+
+.dbb-root[data-theme='dark'] .dbb-kind-file {
+  color: #93c5fd;
+}
+
+/* =========================================================================
+   Application chrome
+   =========================================================================
+
+   Everything below turns a web page into an application: a semantic icon
+   palette, a dense title bar, grouped toolbar clusters, and the four overlays
+   (dialog, cheat sheet, palette, connection manager).
+
+   The density rules are worth stating, because "tighter" is not a number:
+
+     - **Controls inside one idea touch.** A refresh button, a page-size select
+       and a pager are one thought, so they sit in a `.dbb-group` with 1px
+       hairlines between them and no gap. Groups are separated by 8px.
+     - **27px is the control height**, 24px for a chip. That is what makes two
+       rows of controls fit where one used to.
+     - **Nothing exceeds 13px** except a heading or the semantic search box.
+       Application chrome is quieter than page content by design.
+   ========================================================================= */
+
+/* ---------- the icon palette ----------
+
+   Twelve tones, each with a documented meaning (see `react/iconography.tsx`).
+   They are custom properties so a consumer restyles every icon in the product
+   by setting twelve variables — and so this file is the only place a hue is
+   written down. Light values are checked for ≥3:1 against `--dbb-surface`
+   (the non-text contrast minimum); the dark block at the end re-tunes them
+   rather than reusing values that go muddy on a dark surface. */
+
+.dbb-root {
+  --dbb-ic-data: #059669;
+  --dbb-ic-derived: #0891b2;
+  --dbb-ic-key: #b45309;
+  --dbb-ic-type: #7c3aed;
+  --dbb-ic-find: #2563eb;
+  --dbb-ic-graph: #0369a1;
+  --dbb-ic-run: var(--dbb-accent);
+  --dbb-ic-build: #ea580c;
+  --dbb-ic-danger: #dc2626;
+  --dbb-ic-safe: #0f766e;
+  --dbb-ic-link: #4f46e5;
+  --dbb-ic-mute: #64748b;
+}
+
+.dbb-ic {
+  flex: 0 0 auto;
+  vertical-align: -0.15em;
+}
+
+.dbb-ic-data { color: var(--dbb-ic-data); }
+.dbb-ic-derived { color: var(--dbb-ic-derived); }
+.dbb-ic-key { color: var(--dbb-ic-key); }
+.dbb-ic-type { color: var(--dbb-ic-type); }
+.dbb-ic-find { color: var(--dbb-ic-find); }
+.dbb-ic-graph { color: var(--dbb-ic-graph); }
+.dbb-ic-run { color: var(--dbb-ic-run); }
+.dbb-ic-build { color: var(--dbb-ic-build); }
+.dbb-ic-danger { color: var(--dbb-ic-danger); }
+.dbb-ic-safe { color: var(--dbb-ic-safe); }
+.dbb-ic-link { color: var(--dbb-ic-link); }
+.dbb-ic-mute { color: var(--dbb-ic-mute); }
+
+/* On a filled control the glyph belongs to the control's own foreground —
+   a semantic hue inside a solid accent button would be unreadable, and the
+   button already carries the meaning. */
+.dbb-root .dbb-primary .dbb-ic,
+.dbb-kind-badge .dbb-ic,
+.dbb-root .dbb-chip-on .dbb-ic,
+.dbb-conn-manager .dbb-badge .dbb-ic,
+.dbb-test-ok .dbb-ic,
+.dbb-test-fail .dbb-ic,
+.dbb-connector-error .dbb-ic,
+.dbb-banner .dbb-ic {
+  color: currentColor;
+}
+
+/* ---------- title bar ---------- */
+
+.dbb-identity {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.dbb-identity-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+  min-width: 0;
+}
+
+.dbb-identity-sub {
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--dbb-text-muted);
+}
+
+.dbb-posture {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+  border-radius: var(--dbb-radius-sm);
+}
+
+.dbb-header-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+}
+
+.dbb-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--dbb-text-muted);
+}
+
+.dbb-source select {
+  max-width: 22ch;
+  font-size: 12px;
+}
+
+/* ---------- segmented control ----------
+
+   One control that reads as one control: a single bordered track with the
+   active segment filled. Three separate underlined tab buttons with 10px of
+   air between them is the web-page version of the same idea, and it is what
+   this replaces. */
+
+.dbb-seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 2px;
+  border: 1px solid var(--dbb-border);
+  border-radius: var(--dbb-radius);
+  background: var(--dbb-surface-3);
+}
+
+.dbb-root .dbb-seg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  border-radius: calc(var(--dbb-radius) - 3px);
+  padding: 2px 10px;
+  min-height: 24px;
+  font-size: 12.5px;
+  color: var(--dbb-text-muted);
+  transition:
+    background 140ms var(--dbb-ease),
+    color 140ms var(--dbb-ease);
+}
+
+@media (hover: hover) {
+  .dbb-root .dbb-seg-btn:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--dbb-surface) 70%, transparent);
+    border-color: transparent;
+  }
+}
+
+.dbb-root .dbb-seg-on {
+  background: var(--dbb-surface);
+  color: var(--dbb-text);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.12);
+}
+
+.dbb-seg-count {
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--dbb-surface-3);
+  color: var(--dbb-text-muted);
+}
+
+.dbb-seg-on .dbb-seg-count {
+  background: var(--dbb-surface-3);
+}
+
+/* ---------- icon-only buttons ---------- */
+
+.dbb-root .dbb-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: var(--dbb-radius-sm);
+  padding: 0;
+  width: 27px;
+  min-width: 27px;
+  height: 27px;
+  min-height: 27px;
+}
+
+@media (hover: hover) {
+  .dbb-root .dbb-icon-btn:hover:not(:disabled) {
+    background: var(--dbb-surface-3);
+    border-color: var(--dbb-border);
+  }
+}
+
+/* ---------- toolbar clusters ----------
+
+   A group is the application-toolbar idiom: related controls share one border
+   and are divided by hairlines rather than by whitespace. */
+
+.dbb-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  border: 1px solid var(--dbb-border);
+  border-radius: var(--dbb-radius);
+  background: var(--dbb-surface);
+  padding: 1px;
+}
+
+.dbb-group > .dbb-field {
+  padding: 0 6px;
+}
+
+.dbb-group-sep {
+  align-self: stretch;
+  width: 1px;
+  margin: 3px 2px;
+  background: var(--dbb-border);
+  flex: 0 0 auto;
+}
+
+/* Controls inside a group lose their own frame — the group is the frame. */
+.dbb-root .dbb-group > button:not(.dbb-primary),
+.dbb-root .dbb-group select,
+.dbb-root .dbb-group input {
+  border-color: transparent;
+  background: transparent;
+}
+
+.dbb-root .dbb-group > .dbb-primary {
+  border-radius: calc(var(--dbb-radius) - 2px);
+}
+
+/* ---------- accessibility helpers ---------- */
+
+.dbb-sr-only,
+.dbb-sr-head .dbb-modal-titles {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.dbb-root kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  padding: 1px 5px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--dbb-text-muted);
+  background: var(--dbb-surface-3);
+  border: 1px solid var(--dbb-border-strong);
+  border-bottom-width: 2px;
+  border-radius: var(--dbb-radius-sm);
+}
+
+.dbb-keys {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+/* ---------- pane transitions ---------- */
+
+.dbb-pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.dbb-main {
+  overflow: hidden;
+}
+
+/* ---------- sidebar search ---------- */
+
+.dbb-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding-left: 7px;
+  border: 1px solid var(--dbb-border-strong);
+  border-radius: var(--dbb-radius-sm);
+  background: var(--dbb-surface);
+  transition: border-color 120ms var(--dbb-ease);
+}
+
+.dbb-search-wrap:focus-within {
+  border-color: var(--dbb-accent);
+}
+
+.dbb-root .dbb-search-wrap input {
+  border: 0;
+  background: transparent;
+  padding-left: 0;
+  min-width: 0;
+}
+
+.dbb-root .dbb-search-wrap input:focus-visible {
+  outline: none;
+}
+
+.dbb-table-backing {
+  display: inline-flex;
+  flex: 0 0 auto;
+}
+
+.dbb-kind-glyph {
+  color: currentColor;
+}
+
+/* ---------- column headers ---------- */
+
+.dbb-col-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 600;
+}
+
+.dbb-chip-filter {
+  padding-right: 6px !important;
+}
+
+/* ---------- modal ---------- */
+
+.dbb-modal-backdrop {
+  padding: 24px;
+  backdrop-filter: blur(2px);
+}
+
+.dbb-modal {
+  display: flex;
+  flex-direction: column;
+  max-height: min(84vh, 760px);
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--dbb-border);
+}
+
+.dbb-modal-sm { width: min(420px, 94vw); }
+.dbb-modal-md { width: min(620px, 94vw); }
+.dbb-modal-lg { width: min(920px, 94vw); }
+
+.dbb-modal-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--dbb-border);
+  background: var(--dbb-surface-2);
+  flex: 0 0 auto;
+}
+
+.dbb-modal-titles {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.dbb-modal-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.dbb-modal-sub {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--dbb-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dbb-modal-body {
+  overflow: auto;
+  min-height: 0;
+  flex: 1 1 auto;
+  padding: 12px 14px;
+}
+
+.dbb-modal-actions {
+  margin: 0;
+  padding: 10px 14px;
+  border-top: 1px solid var(--dbb-border);
+  background: var(--dbb-surface-2);
+  flex: 0 0 auto;
+}
+
+.dbb-pad {
+  padding: 12px 2px;
+}
+
+/* ---------- cheat sheet ---------- */
+
+.dbb-cheat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px 24px;
+}
+
+.dbb-cheat-group-title {
+  margin: 0 0 6px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dbb-text-muted);
+}
+
+.dbb-cheat-group dl {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.dbb-cheat-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 0;
+  border-bottom: 1px solid var(--dbb-border);
+}
+
+.dbb-cheat-row dt {
+  flex: 1 1 auto;
+  font-size: 12.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dbb-cheat-row dd {
+  margin: 0;
+  display: inline-flex;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+
+.dbb-cheat-flag {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--dbb-info-bg);
+  color: var(--dbb-ic-find);
+}
+
+/* ---------- command palette ---------- */
+
+.dbb-palette .dbb-modal-body {
+  padding: 0;
+}
+
+.dbb-palette-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--dbb-border);
+}
+
+.dbb-root .dbb-palette-search input {
+  flex: 1 1 auto;
+  border: 0;
+  background: transparent;
+  font-size: 15px;
+  min-height: 26px;
+}
+
+.dbb-root .dbb-palette-search input:focus-visible {
+  outline: none;
+}
+
+.dbb-palette-list {
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  max-height: 52vh;
+  overflow: auto;
+}
+
+.dbb-root .dbb-palette-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  border-radius: var(--dbb-radius-sm);
+  padding: 5px 9px;
+  min-height: 30px;
+  text-align: left;
+}
+
+.dbb-root .dbb-palette-item-on {
+  background: var(--dbb-surface-3);
+}
+
+.dbb-palette-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dbb-palette-detail,
+.dbb-palette-group {
+  font-size: 11px;
+  color: var(--dbb-text-muted);
+  flex: 0 0 auto;
+}
+
+.dbb-palette-group {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 9.5px;
+}
+
+.dbb-palette-empty {
+  padding: 18px;
+  text-align: center;
+  color: var(--dbb-text-muted);
+  font-size: 13px;
+}
+
+/* ---------- connection manager ---------- */
+
+.dbb-conn-manager .dbb-seg {
+  margin-bottom: 10px;
+}
+
+.dbb-conn-list,
+.dbb-connector-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dbb-conn-item,
+.dbb-connector {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--dbb-border);
+  border-radius: var(--dbb-radius);
+  background: var(--dbb-surface);
+  transition: border-color 140ms var(--dbb-ease);
+}
+
+@media (hover: hover) {
+  .dbb-conn-item:hover,
+  .dbb-connector:hover {
+    border-color: var(--dbb-border-strong);
+  }
+}
+
+.dbb-conn-mark,
+.dbb-connector-mark {
+  display: inline-flex;
+  padding-top: 2px;
+  flex: 0 0 auto;
+}
+
+.dbb-conn-body,
+.dbb-connector-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.dbb-conn-title,
+.dbb-connector-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.dbb-conn-sub,
+.dbb-connector-driver {
+  font-size: 11.5px;
+  color: var(--dbb-text-muted);
+  font-family: var(--dbb-mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dbb-connector-dialect {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--dbb-text-muted);
+  font-weight: 500;
+}
+
+.dbb-conn-actions,
+.dbb-connector-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.dbb-conn-new {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--dbb-border);
+}
+
+.dbb-test-ok,
+.dbb-test-fail {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.dbb-test-ok { color: var(--dbb-read); }
+.dbb-test-fail { color: var(--dbb-danger); }
+
+.dbb-connector-error {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--dbb-danger);
+}
+
+/* ---------- driver install progress ---------- */
+
+.dbb-install {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.dbb-install-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 11.5px;
+}
+
+.dbb-install-phase {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--dbb-ic-build);
+}
+
+.dbb-install-pct {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  margin-left: auto;
+}
+
+.dbb-install-msg {
+  font-size: 11.5px;
+  color: var(--dbb-text-muted);
+  font-family: var(--dbb-mono);
+}
+
+.dbb-progress-build {
+  background: var(--dbb-ic-build);
+}
+
+/* ---------- generated connection form ---------- */
+
+.dbb-conn-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dbb-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dbb-form-row-inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 7px;
+}
+
+.dbb-form-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dbb-text-muted);
+}
+
+.dbb-req {
+  color: var(--dbb-danger);
+}
+
+.dbb-form-hint {
+  font-size: 11.5px;
+  color: var(--dbb-text-muted);
+}
+
+.dbb-form-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--dbb-danger);
+}
+
+.dbb-form-caps {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 2px 0 0;
+  font-size: 11.5px;
+  color: var(--dbb-text-muted);
+}
+
+.dbb-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.dbb-secret-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ---------- engine picker (step one of "new connection") ---------- */
+
+.dbb-engine-pick {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dbb-engine-pick-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dbb-engine-pick-head .dbb-muted {
+  font-size: 11.5px;
+}
+
+.dbb-engine-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+
+/* A grid item's default `min-width: auto` is its *content* width, so a long
+   engine description would push the track wider than the dialog and give the
+   whole panel a horizontal scrollbar. Every level down to the text needs the
+   override, not just the top one. */
+.dbb-engine-grid > li {
+  min-width: 0;
+  display: flex;
+}
+
+/* Scoped under `.dbb-root` to out-specify the `.dbb-root button` base, which
+   is `inline-flex`, centred and `nowrap` — correct for a toolbar button, and
+   exactly wrong for a card whose body is two sentences of prose. */
+.dbb-root .dbb-engine-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 10px;
+  text-align: left;
+  white-space: normal;
+  /* `break-word`, not `anywhere`: `anywhere` is allowed to split a word even
+     when the line has room, which chopped the driver name in "Downloads
+     `mysql2`" into "Download / s" + "mysql / 2". This only breaks a word that
+     would otherwise overflow on its own. */
+  overflow-wrap: break-word;
+  border: 1px solid var(--dbb-border);
+  border-radius: var(--dbb-radius);
+  background: var(--dbb-surface);
+  cursor: pointer;
+  transition:
+    border-color 140ms var(--dbb-ease),
+    background 140ms var(--dbb-ease),
+    transform 140ms var(--dbb-ease);
+}
+
+@media (hover: hover) {
+  .dbb-root .dbb-engine-card:hover:not(:disabled) {
+    border-color: var(--dbb-accent);
+    background: var(--dbb-surface-2);
+  }
+}
+
+.dbb-root .dbb-engine-card:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+/* Not merely dimmed: an engine this build cannot open says so in words, in the
+   card, so "why can I not pick this" never needs a hover. */
+.dbb-root .dbb-engine-card-off,
+.dbb-root .dbb-engine-card:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+  background: var(--dbb-surface-2);
+}
+
+.dbb-engine-card-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.dbb-engine-card-name {
+  font-weight: 650;
+  font-size: 13px;
+}
+
+.dbb-engine-card-sub {
+  min-width: 0;
+  font-size: 11.5px;
+  line-height: 1.4;
+  color: var(--dbb-text-muted);
+}
+
+/* A block, not a flex row: this line is one sentence with an icon and a `<code>`
+   inside it. As a flex container every text run between the elements becomes
+   its own flex item and wraps independently of the words around it, which is
+   how "Downloads mysql2" broke across three lines mid-word. */
+.dbb-engine-card-why {
+  display: block;
+  min-width: 0;
+  margin-top: 2px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--dbb-text-muted);
+}
+
+/* Inline, so the sentence starts on the icon's own line. `.dbb-ic` is a block
+   by default (lucide's SVGs are), which pushed the whole sentence below it. */
+.dbb-engine-card-why .dbb-ic {
+  display: inline-block;
+  vertical-align: -2px;
+  margin-right: 4px;
+}
+
+.dbb-engine-card-why code {
+  white-space: nowrap;
+}
+
+/* ---------- the inline driver gate above the form ---------- */
+
+.dbb-driver-gate {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid var(--dbb-border);
+  border-left: 3px solid var(--dbb-ic-build);
+  border-radius: var(--dbb-radius);
+  background: var(--dbb-surface-2);
+}
+
+.dbb-driver-gate-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+}
+
+.dbb-driver-gate-head > span {
+  flex: 1 1 240px;
+  min-width: 0;
+}
+
+.dbb-driver-gate-head > button {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.dbb-form-blocked {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  justify-content: flex-end;
+}
+
+/* A button that reads as a link — used inline inside a sentence, where a real
+   button would break the line's rhythm. Scoped under `.dbb-root` for the same
+   reason as the engine card: the base button rule is more specific than a bare
+   class and would otherwise re-impose a border, a min-height and a background. */
+.dbb-root .dbb-link-btn {
+  display: inline;
+  padding: 0;
+  min-height: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  white-space: normal;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .dbb-root .dbb-link-btn:hover:not(:disabled) {
+    background: none;
+    color: var(--dbb-accent);
+  }
+}
+
+.dbb-root .dbb-link-btn:disabled {
+  cursor: default;
+  opacity: 0.6;
+  text-decoration: none;
+}
+
+.dbb-secret-row input {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: var(--dbb-mono);
+}
+
+.dbb-secret-on,
+.dbb-secret-off {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0 6px;
+  border-radius: 999px;
+}
+
+.dbb-secret-on {
+  background: var(--dbb-read-bg);
+  color: var(--dbb-read);
+}
+
+.dbb-secret-off {
+  background: var(--dbb-surface-3);
+  color: var(--dbb-text-muted);
+}
+
+/* ---------- dark theme for the new chrome ----------
+
+   Re-tuned rather than reused: the light hues are chosen for ≥3:1 on white and
+   several of them (emerald 600, indigo 600, sky 700) fall well below that on a
+   slate-900 surface. */
+
+@media (prefers-color-scheme: dark) {
+  .dbb-root:not([data-theme='light']) {
+    --dbb-ic-data: #34d399;
+    --dbb-ic-derived: #22d3ee;
+    --dbb-ic-key: #fbbf24;
+    --dbb-ic-type: #c4b5fd;
+    --dbb-ic-find: #93c5fd;
+    --dbb-ic-graph: #7dd3fc;
+    --dbb-ic-build: #fb923c;
+    --dbb-ic-danger: #fca5a5;
+    --dbb-ic-safe: #5eead4;
+    --dbb-ic-link: #a5b4fc;
+    --dbb-ic-mute: #94a3b8;
+  }
+
+  .dbb-root:not([data-theme='light']) .dbb-seg-on {
+    box-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  }
+}
+
+.dbb-root[data-theme='dark'] {
+  --dbb-ic-data: #34d399;
+  --dbb-ic-derived: #22d3ee;
+  --dbb-ic-key: #fbbf24;
+  --dbb-ic-type: #c4b5fd;
+  --dbb-ic-find: #93c5fd;
+  --dbb-ic-graph: #7dd3fc;
+  --dbb-ic-build: #fb923c;
+  --dbb-ic-danger: #fca5a5;
+  --dbb-ic-safe: #5eead4;
+  --dbb-ic-link: #a5b4fc;
+  --dbb-ic-mute: #94a3b8;
+}
+
+/* ---------- reduced motion ----------
+
+   The JavaScript layer already refuses to mount a motion component when the
+   user asks for reduced motion (`react/motion.tsx`), which is the part a
+   stylesheet cannot do. This is the declarative half: CSS transitions, the
+   spinner and the scroll-linked transform all stop too, and — critically —
+   `transition: none` is applied with `!important` so a `motion` component that
+   is already mounted when the preference flips mid-session settles instantly
+   instead of easing to its new value. */
+
+@media (prefers-reduced-motion: reduce) {
+  .dbb-root *,
+  .dbb-modal-backdrop *,
+  .dbb-modal-backdrop,
+  .dbb-toast {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+
+  .dbb-spin {
+    animation: none !important;
+  }
+}
+
+/* ---------- late corrections ----------
+
+   A dialog that hides its title (the command palette is its own heading) still
+   needs its close button. Leaving the header band in place produced an empty
+   40px strip above the search field, so the button floats instead. */
+
+.dbb-modal-head.dbb-sr-head {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  z-index: 1;
+}
+
+.dbb-connector-desc {
+  font-size: 11.5px;
+  color: var(--dbb-text-muted);
+}
+
+/* The palette's own search must clear the floating close button. */
+.dbb-palette .dbb-palette-search {
+  padding-right: 42px;
 }

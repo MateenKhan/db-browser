@@ -21,8 +21,23 @@
  *
  * This is the *first* gate, not the only one. The reference Postgres adapter
  * additionally runs read-only work inside a `BEGIN … READ ONLY` transaction,
- * so the database itself refuses a write the regex somehow missed.
+ * and the SQLite adapter opens the file `readOnly` at the driver level, so the
+ * database itself refuses a write the regex somehow missed.
+ *
+ * ## Dialects
+ *
+ * Dangerous built-ins are engine-specific. Postgres has `pg_read_file()` and
+ * `COPY … TO PROGRAM`; SQLite's equivalents are entirely different —
+ * `writefile()`/`readfile()` from the fileio extension, `load_extension()`,
+ * `VACUUM INTO 'somewhere.db'` (a whole-database exfiltration in one
+ * statement), and the `sqlite_dbpage`/`sqlar`/`zipfile` virtual tables. The
+ * shared `DENYLIST` holds what is dangerous *everywhere*; `DIALECT_DENYLIST`
+ * adds the rest per engine. This file still imports nothing engine-specific —
+ * a dialect here is a name, not a driver.
  */
+
+import { DEFAULT_DIALECT } from './dialect.js'
+import type { SqlDialect } from './dialect.js'
 
 export type StatementKind = 'read' | 'write' | 'ddl' | 'transaction' | 'other' | 'empty'
 
@@ -47,6 +62,8 @@ export interface SqlAnalysis {
   smuggledKeyword?: string | null
   /** Statements that are an unqualified `UPDATE`/`DELETE`. */
   missingWhere: StatementInfo[]
+  /** Which dialect's denylist was applied. */
+  dialect: SqlDialect
 }
 
 export type GuardMode = 'read-only' | 'read-write'
@@ -59,6 +76,12 @@ export interface GuardOptions {
   allowDdl?: boolean
   /** Require the caller to have confirmed an unqualified UPDATE/DELETE. */
   confirmedUnqualified?: boolean
+  /**
+   * Which engine's extra denylist to apply on top of the shared one. Defaults
+   * to `postgres` so an adapter that predates dialects keeps its old
+   * behaviour exactly.
+   */
+  dialect?: SqlDialect
 }
 
 export type SqlGuardCode =
@@ -93,30 +116,127 @@ const TRANSACTION_COMMANDS = new Set([
 
 /**
  * Words that must not appear anywhere in a statement we are about to treat as
- * a read. Word-bounded, so `created_at` / `update_seq` / `pg_settings` do not
- * false-positive (the trailing `_` is a word character, so `\bCREATE\b` and
- * `\bUPDATE\b` cannot match inside them).
+ * a read, **whatever the engine**. Word-bounded, so `created_at` /
+ * `update_seq` / `pg_settings` do not false-positive (the trailing `_` is a
+ * word character, so `\bCREATE\b` and `\bUPDATE\b` cannot match inside them).
  *
  * `SELECT … FOR UPDATE` is deliberately rejected: it takes row locks, which is
  * not a read as far as a shared console is concerned.
+ *
+ * `ATTACH`/`DETACH`/`PRAGMA`/`VACUUM` live here rather than in the SQLite list
+ * on purpose: they are SQLite's dangerous verbs, but no Postgres statement
+ * legitimately contains them either, so blocking them everywhere costs
+ * nothing and means a mis-declared dialect cannot open a hole.
  */
-const DENYLIST = new RegExp(
-  '\\b(' +
-    [
-      'INSERT', 'UPDATE', 'DELETE', 'MERGE', 'UPSERT', 'COPY',
-      'DROP', 'ALTER', 'CREATE', 'REPLACE', 'TRUNCATE', 'RENAME',
-      'GRANT', 'REVOKE', 'REINDEX', 'VACUUM', 'CLUSTER', 'REFRESH',
-      'CALL', 'DO', 'PREPARE', 'EXECUTE', 'DEALLOCATE',
-      'LISTEN', 'NOTIFY', 'UNLISTEN', 'LOCK', 'DISCARD',
-      'ATTACH', 'DETACH', 'PRAGMA', 'IMPORT', 'SECURITY',
-      // `SELECT … INTO new_table` is a CREATE TABLE wearing a SELECT's clothes.
-      'INTO',
-      'PG_TERMINATE_BACKEND', 'PG_CANCEL_BACKEND', 'PG_READ_FILE',
-      'PG_READ_BINARY_FILE', 'PG_LS_DIR', 'LO_IMPORT', 'LO_EXPORT', 'DBLINK',
-    ].join('|') +
-    ')\\b',
-  'i',
-)
+const SHARED_DENYLIST = [
+  'INSERT', 'UPDATE', 'DELETE', 'MERGE', 'UPSERT', 'COPY',
+  'DROP', 'ALTER', 'CREATE', 'REPLACE', 'TRUNCATE', 'RENAME',
+  'GRANT', 'REVOKE', 'REINDEX', 'VACUUM', 'CLUSTER', 'REFRESH',
+  'CALL', 'DO', 'PREPARE', 'EXECUTE', 'DEALLOCATE',
+  'LISTEN', 'NOTIFY', 'UNLISTEN', 'LOCK', 'DISCARD',
+  'ATTACH', 'DETACH', 'PRAGMA', 'IMPORT', 'SECURITY',
+  // `SELECT … INTO new_table` is a CREATE TABLE wearing a SELECT's clothes,
+  // and `VACUUM INTO 'exfil.db'` is a whole-database copy in one statement.
+  'INTO',
+]
+
+/**
+ * Engine-specific additions. These are the built-ins that reach outside the
+ * database — the reason a "read-only" console is not automatically safe.
+ *
+ * SQLite's set has nothing in common with Postgres's: `writefile()` and
+ * `readfile()` come from the `fileio` extension and write/read arbitrary paths
+ * as the server user; `load_extension()` loads a shared library, i.e. arbitrary
+ * code; `sqlite_dbpage` exposes raw B-tree pages (so `SELECT` alone can dump
+ * every byte of a database, bypassing every table-level rule); `sqlar`,
+ * `zipfile` and `fsdir` walk and unpack the filesystem. They are all blocked
+ * even though the driver is *also* opened read-only, because "read-only" stops
+ * writes to the database file — it does not stop a read that writes elsewhere.
+ */
+const DIALECT_DENYLIST: Record<SqlDialect, string[]> = {
+  postgres: [
+    'PG_TERMINATE_BACKEND', 'PG_CANCEL_BACKEND', 'PG_READ_FILE',
+    'PG_READ_BINARY_FILE', 'PG_LS_DIR', 'LO_IMPORT', 'LO_EXPORT', 'DBLINK',
+  ],
+  sqlite: [
+    'WRITEFILE', 'READFILE', 'FSDIR', 'LSMODE',
+    'LOAD_EXTENSION', 'SQLITE_DBPAGE', 'SQLAR', 'ZIPFILE',
+    'FTS3_TOKENIZER', 'EDIT',
+  ],
+  /**
+   * MySQL's file surface: `LOAD_FILE()` reads any path the server user can
+   * (it is a *function*, so it rides inside an ordinary `SELECT`), `INTO
+   * OUTFILE`/`DUMPFILE` writes one (`INTO` is already shared-denylisted, but
+   * naming these makes the rejection message say which one), `LOAD DATA
+   * [LOCAL] INFILE` reads a client-side file through the protocol itself, and
+   * `INSTALL PLUGIN`/`INSTALL COMPONENT` load native code. `HANDLER` opens a
+   * raw storage-engine cursor that bypasses the optimiser and its checks.
+   */
+  mysql: [
+    'LOAD_FILE', 'OUTFILE', 'DUMPFILE', 'INFILE',
+    'INSTALL', 'UNINSTALL', 'HANDLER', 'FLUSH', 'KILL', 'SHUTDOWN',
+    'SYS_EXEC', 'SYS_EVAL',
+  ],
+  // MariaDB is MySQL's surface plus its own: `sequence` engine tables are
+  // harmless, but `mysql.plugin`-style loading is the same risk under the same
+  // verbs, so the list is shared rather than diverged for its own sake.
+  mariadb: [
+    'LOAD_FILE', 'OUTFILE', 'DUMPFILE', 'INFILE',
+    'INSTALL', 'UNINSTALL', 'HANDLER', 'FLUSH', 'KILL', 'SHUTDOWN',
+    'SYS_EXEC', 'SYS_EVAL',
+  ],
+  /**
+   * SQL Server's are the worst of any engine here, because several are
+   * *procedures* invoked with `EXEC` (already shared-denylisted) and several
+   * more ride inside a `SELECT`: `OPENROWSET`/`OPENDATASOURCE`/`OPENQUERY`
+   * open an ad-hoc connection to another server (a read that is also an
+   * outbound network call), `BULK` reads a file, and `xp_cmdshell` is a shell.
+   */
+  mssql: [
+    'XP_CMDSHELL', 'SP_CONFIGURE', 'SP_EXECUTESQL', 'SP_OACREATE', 'SP_OAMETHOD',
+    'OPENROWSET', 'OPENDATASOURCE', 'OPENQUERY', 'BULK', 'BACKUP', 'RESTORE',
+    'SHUTDOWN', 'RECONFIGURE',
+  ],
+  /**
+   * Oracle's file and network reach is all through built-in packages, which
+   * are word-bounded names inside otherwise ordinary statements:
+   * `UTL_FILE` (filesystem), `UTL_HTTP`/`UTL_TCP`/`UTL_SMTP` (outbound
+   * network), `DBMS_SCHEDULER`/`DBMS_JOB` (deferred arbitrary execution),
+   * `DBMS_LOB.LOADFROMFILE`, and `DBMS_XMLGEN`/`DBMS_XSLPROCESSOR`.
+   */
+  oracle: [
+    'UTL_FILE', 'UTL_HTTP', 'UTL_TCP', 'UTL_SMTP', 'UTL_INADDR',
+    'DBMS_SCHEDULER', 'DBMS_JOB', 'DBMS_LOB', 'DBMS_XMLGEN', 'DBMS_XSLPROCESSOR',
+    'DBMS_SQL', 'DBMS_PIPE', 'DBMS_ADVISOR', 'JAVA',
+  ],
+  /**
+   * DuckDB is an *analytics* engine whose whole point is reading files, so its
+   * ordinary table functions are exactly the exfiltration primitives:
+   * `read_csv`/`read_parquet`/`read_json` take any path or URL, `COPY … TO`
+   * writes one, `INSTALL`/`LOAD` fetch and load a native extension, and
+   * `httpfs` turns a `SELECT` into an outbound HTTP request. A read-only
+   * DuckDB console is therefore *not* automatically a safe one.
+   */
+  duckdb: [
+    'READ_CSV', 'READ_CSV_AUTO', 'READ_PARQUET', 'READ_JSON', 'READ_JSON_AUTO',
+    'READ_BLOB', 'READ_TEXT', 'GLOB', 'INSTALL', 'LOAD', 'FORCE',
+    'HTTPFS', 'PARQUET_SCAN', 'ICEBERG_SCAN', 'DELTA_SCAN', 'SNIFF_CSV',
+  ],
+}
+
+const denylistCache = new Map<SqlDialect, RegExp>()
+
+/** The word-bounded denylist regex for one dialect. Built once, then cached. */
+function denylistFor(dialect: SqlDialect): RegExp {
+  const cached = denylistCache.get(dialect)
+  if (cached) return cached
+  const built = new RegExp(
+    `\\b(${[...SHARED_DENYLIST, ...(DIALECT_DENYLIST[dialect] ?? [])].join('|')})\\b`,
+    'i',
+  )
+  denylistCache.set(dialect, built)
+  return built
+}
 
 /**
  * Replace the *contents* of comments, string literals, dollar-quoted blocks and
@@ -240,16 +360,19 @@ function classifyCommand(command: string): StatementKind {
 }
 
 /** Classify one statement. `sql` must already be a single statement. */
-export function classifyStatement(sql: string): StatementInfo {
+export function classifyStatement(
+  sql: string,
+  dialect: SqlDialect = DEFAULT_DIALECT,
+): StatementInfo {
   const text = stripTrailingSemicolon(sql)
   const masked = maskSql(text)
   const command = firstWord(masked)
   let kind = classifyCommand(command)
 
   // A read-looking statement that mentions a denylisted keyword is not a read.
-  // This is what catches `WITH d AS (DELETE … RETURNING *) SELECT * FROM d`
-  // and `EXPLAIN ANALYZE UPDATE …`.
-  if (kind === 'read' && DENYLIST.test(masked)) kind = 'write'
+  // This is what catches `WITH d AS (DELETE … RETURNING *) SELECT * FROM d`,
+  // `EXPLAIN ANALYZE UPDATE …` and `SELECT writefile('/tmp/x', content)`.
+  if (kind === 'read' && denylistFor(dialect).test(masked)) kind = 'write'
 
   const missingWhere =
     (command === 'UPDATE' || command === 'DELETE') && !/\bWHERE\b/i.test(masked)
@@ -267,17 +390,18 @@ const KIND_SEVERITY: Record<StatementKind, number> = {
 }
 
 /** Full analysis of a possibly multi-statement script. Never throws. */
-export function analyzeSql(sql: string): SqlAnalysis {
+export function analyzeSql(sql: string, dialect: SqlDialect = DEFAULT_DIALECT): SqlAnalysis {
   const pieces = splitStatements(sql ?? '')
-  const statements = pieces.map(classifyStatement)
+  const statements = pieces.map((s) => classifyStatement(s, dialect))
   let kind: StatementKind = statements.length ? 'read' : 'empty'
   for (const s of statements) {
     if (KIND_SEVERITY[s.kind] > KIND_SEVERITY[kind]) kind = s.kind
   }
+  const denylist = denylistFor(dialect)
   let smuggled: string | null = null
   for (const s of statements) {
     if (READ_COMMANDS.has(s.command)) {
-      const hit = DENYLIST.exec(maskSql(s.sql))
+      const hit = denylist.exec(maskSql(s.sql))
       if (hit) {
         smuggled = hit[1].toUpperCase()
         break
@@ -291,6 +415,7 @@ export function analyzeSql(sql: string): SqlAnalysis {
     readOnly: statements.length > 0 && statements.every((s) => s.kind === 'read'),
     smuggledKeyword: smuggled,
     missingWhere: statements.filter((s) => s.missingWhere),
+    dialect,
   }
 }
 
@@ -302,7 +427,7 @@ export function assertSqlAllowed(sql: string, options: GuardOptions): SqlAnalysi
   if (!sql || !sql.trim()) {
     throw new SqlGuardError('EMPTY_SQL', 'SQL statement is required')
   }
-  const analysis = analyzeSql(sql)
+  const analysis = analyzeSql(sql, options.dialect ?? DEFAULT_DIALECT)
   if (!analysis.statements.length) {
     throw new SqlGuardError('EMPTY_SQL', 'SQL statement is required')
   }

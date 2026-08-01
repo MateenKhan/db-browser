@@ -5,10 +5,28 @@
  * not one; the server re-checks everything) but so the classification of what
  * you are about to run is visible *before* you run it, and so an obviously
  * blocked statement does not cost a round trip.
+ *
+ * ## What the toolbar dropped
+ *
+ * It used to carry a `SQLite` badge and a `connection is read-only` badge. The
+ * application header states both, permanently, for every pane — repeating them
+ * here made a seven-control toolbar out of a five-control one, and put the two
+ * least changeable facts on screen beside the most changeable. What stays is
+ * the statement **classification** (`SELECT · read`), which is the one badge
+ * here that changes as you type and is the whole reason the guard also runs
+ * client-side.
+ *
+ * The `Run` button no longer spells its shortcut into its own label either. The
+ * binding is in its tooltip and in the `?` cheat sheet, which is where every
+ * other binding in this application lives.
  */
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { Glyph } from './iconography.js'
+import { Appear } from './motion.js'
+import { hint, useShortcuts } from './shortcuts.js'
 import { analyzeSql } from '../sql/guard.js'
+import { asDialect } from '../sql/dialect.js'
 import { formatQuery } from '../sql/format.js'
 import { toDisplay } from '../render/values.js'
 import { downloadText, toCsv, toJson } from './exportRows.js'
@@ -49,7 +67,17 @@ export function SqlConsole({
   defaultLimit = 100,
   maxLimit = 1000,
 }: SqlConsoleProps) {
-  const [sql, setSql] = useState('SELECT * FROM public.feature LIMIT 20')
+  const caps = dataSource.capabilities()
+  const dialect = asDialect(caps.dialect)
+
+  // The starter statement has to name a table that plausibly exists on the
+  // engine you are connected to. `public.feature` is a Postgres-shaped guess;
+  // on SQLite it is a syntax-valid statement that can only ever error.
+  const [sql, setSql] = useState(() =>
+    dialect === 'sqlite'
+      ? "SELECT type, name FROM sqlite_master WHERE type = 'table' LIMIT 20"
+      : 'SELECT * FROM public.feature LIMIT 20',
+  )
   const [limit, setLimit] = useState(defaultLimit)
   const [allowWrite, setAllowWrite] = useState(false)
   const [running, setRunning] = useState(false)
@@ -62,14 +90,16 @@ export function SqlConsole({
   const [saveName, setSaveName] = useState('')
 
   const connectionId = dataSource.id
-  const writable = dataSource.capabilities().writes
+  const writable = caps.writes
 
   useEffect(() => {
     setHistory(loadHistory(connectionId))
     setSaved(loadSavedQueries(connectionId))
   }, [connectionId])
 
-  const analysis = useMemo(() => analyzeSql(sql), [sql])
+  // Analysed with the connected engine's denylist, so the badge and the
+  // "blocked" banner agree with what the server will actually decide.
+  const analysis = useMemo(() => analyzeSql(sql, dialect), [sql, dialect])
   const blocked = useMemo(() => {
     if (!analysis.statements.length) return 'Nothing to run'
     if (analysis.multiple) return 'Multiple statements are blocked'
@@ -136,29 +166,92 @@ export function SqlConsole({
 
   const columnNames = useMemo(() => (result?.columns ?? []).map((c) => c.name), [result])
 
+  // `allowInEditor` on exactly two of these: they are *editor* commands, and
+  // their whole purpose is to fire while the SQL editor has focus. Neither can
+  // be produced by ordinary typing. Everything else stays suppressed while a
+  // field is focused — see `shortcuts.tsx`.
+  useShortcuts([
+    {
+      id: 'sql-run',
+      keys: 'mod+enter',
+      label: 'Run query',
+      group: 'Query',
+      allowInEditor: true,
+      enabled: !blocked && !running,
+      run: () => void run(),
+    },
+    {
+      id: 'sql-format',
+      keys: 'shift+alt+f',
+      label: 'Format query',
+      group: 'Query',
+      allowInEditor: true,
+      run: () => setSql(formatQuery(sql, { dialect })),
+    },
+    {
+      id: 'sql-save',
+      keys: 'mod+s',
+      label: 'Save query',
+      group: 'Query',
+      enabled: !!sql.trim(),
+      run: () => setSaving(true),
+    },
+    {
+      id: 'sql-writes',
+      // **Not** `mod+shift+w`, which closes the browser window. Binding a
+      // destructive-adjacent toggle to a chord that shuts the tool down is the
+      // kind of thing that only gets found in a bug report.
+      keys: 'alt+w',
+      label: 'Toggle “allow writes”',
+      group: 'Query',
+      enabled: writable,
+      run: () => setAllowWrite((v) => !v),
+    },
+  ])
+
   return (
     <div className="dbb-console">
       <div className="dbb-console-bar">
-        <button type="button" className="dbb-primary" onClick={run} disabled={running || !!blocked}>
-          {running ? 'Running…' : 'Run ⌘/Ctrl+↵'}
-        </button>
-        <button type="button" onClick={() => setSql(formatQuery(sql))}>
-          Format
-        </button>
-        <label className="dbb-field">
-          Rows
-          <select value={limit} onChange={(e) => setLimit(Number(e.target.value))}>
-            {[25, 50, 100, 250, 500, 1000]
-              .filter((n) => n <= maxLimit)
-              .map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-          </select>
-        </label>
+        <div className="dbb-group">
+          <button
+            type="button"
+            className="dbb-primary"
+            onClick={run}
+            disabled={running || !!blocked}
+            title={blocked ?? hint('Run this statement', 'mod+enter')}
+          >
+            <Glyph name={running ? 'busy' : 'run'} size="sm" spin={running} tone="run" />
+            {running ? 'Running…' : 'Run'}
+          </button>
+          <span className="dbb-group-sep" />
+          <button
+            type="button"
+            onClick={() => setSql(formatQuery(sql, { dialect }))}
+            title={hint('Format', 'shift+alt+f')}
+          >
+            <Glyph name="format" size="sm" />
+            Format
+          </button>
+          <span className="dbb-group-sep" />
+          <label className="dbb-field" title="Every query is capped. Raise this deliberately.">
+            <Glyph name="rows" size="sm" />
+            <span className="dbb-sr-only">Row limit</span>
+            <select value={limit} onChange={(e) => setLimit(Number(e.target.value))}>
+              {[25, 50, 100, 250, 500, 1000]
+                .filter((n) => n <= maxLimit)
+                .map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+            </select>
+          </label>
+        </div>
 
-        <span className={`dbb-badge ${KIND_CLASS[analysis.kind] ?? ''}`} title="Statement classification">
+        <span
+          className={`dbb-badge ${KIND_CLASS[analysis.kind] ?? ''}`}
+          title="How the guard classifies what is in the editor right now. The server reaches the same verdict independently."
+        >
           {analysis.statements.length > 1
             ? `${analysis.statements.length} statements`
             : (analysis.statements[0]?.command || 'empty')}
@@ -167,19 +260,19 @@ export function SqlConsole({
         </span>
 
         {writable ? (
-          <label className="dbb-field dbb-danger-toggle" title="Writes are off by default">
+          <label
+            className="dbb-field dbb-danger-toggle"
+            title={hint('Writes are off by default — this arms them', 'alt+w')}
+          >
             <input
               type="checkbox"
               checked={allowWrite}
               onChange={(e) => setAllowWrite(e.target.checked)}
             />
+            <Glyph name={allowWrite ? 'writable' : 'readOnly'} size="sm" />
             allow writes
           </label>
-        ) : (
-          <span className="dbb-badge dbb-badge-muted" title="The server opened this connection read-only">
-            connection is read-only
-          </span>
-        )}
+        ) : null}
 
         <span className="dbb-spacer" />
         {/* An inline field rather than `window.prompt`: a modal dialog blocks
@@ -204,27 +297,44 @@ export function SqlConsole({
             </button>
           </span>
         ) : (
-          <button type="button" onClick={() => setSaving(true)} disabled={!sql.trim()}>
+          <button
+            type="button"
+            onClick={() => setSaving(true)}
+            disabled={!sql.trim()}
+            title={hint('Save this query', 'mod+s')}
+          >
+            <Glyph name="save" size="sm" />
             Save
           </button>
         )}
       </div>
 
       {blocked ? (
-        <div className="dbb-banner dbb-banner-warn">
-          <strong>Blocked:</strong> {blocked}.{' '}
-          {analysis.multiple
-            ? 'Semicolon-chained statements are the classic way a read-only console becomes a DROP.'
-            : null}
-        </div>
+        <Appear className="dbb-banner dbb-banner-warn">
+          <Glyph name="danger" size="sm" />
+          <span>
+            <strong>Blocked:</strong> {blocked}.{' '}
+            {analysis.multiple
+              ? 'Semicolon-chained statements are the classic way a read-only console becomes a DROP.'
+              : null}
+          </span>
+        </Appear>
       ) : null}
 
       <div className="dbb-console-editor">
-        <SqlEditor value={sql} onChange={setSql} onRun={run} tables={tables} schemas={schemas} />
+        <SqlEditor
+          value={sql}
+          onChange={setSql}
+          onRun={run}
+          tables={tables}
+          schemas={schemas}
+          dialect={dialect}
+        />
       </div>
 
       {error ? (
         <div className="dbb-banner dbb-banner-error" role="alert">
+          <Glyph name="failure" size="sm" />
           {error}
         </div>
       ) : null}
@@ -276,14 +386,18 @@ export function SqlConsole({
             className={tab === 'history' ? 'dbb-tab dbb-tab-active' : 'dbb-tab'}
             onClick={() => setTab('history')}
           >
+            <Glyph name="history" size="sm" />
             History
+            {history.length ? <span className="dbb-seg-count">{history.length}</span> : null}
           </button>
           <button
             type="button"
             className={tab === 'saved' ? 'dbb-tab dbb-tab-active' : 'dbb-tab'}
             onClick={() => setTab('saved')}
           >
+            <Glyph name="save" size="sm" />
             Saved
+            {saved.length ? <span className="dbb-seg-count">{saved.length}</span> : null}
           </button>
           <span className="dbb-spacer" />
           {tab === 'history' ? (
