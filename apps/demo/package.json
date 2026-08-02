@@ -14,7 +14,7 @@
   "dependencies": {
     "@jugaaadi/db-browser": "^0.0.1",
     "@jugaaadi/db-browser-pg": "^0.0.1",
-    "@jugaaadi/table": "file:../../vendor/jugaaadi-table-0.0.1.tgz",
+    "@jugaaadi/table": "^0.0.1",
     "pg": "^8.13.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
